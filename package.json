@@ -1,7 +1,7 @@
 {
-  "name": "leaflet-sidebar-v2",
-  "version": "3.0.4",
-  "description": "A responsive sidebar just for Leaflet",
+  "name": "leaflet-popup-sidebar",
+  "version": "1.0.0",
+  "description": "A responsive sidebar popup just for Leaflet",
   "keywords": [
     "gis",
     "leaflet",
@@ -16,11 +16,12 @@
   "author": "Tobias Bieniek <tobias.bieniek@gmx.de>",
   "contributors": [
     "Norwin <noerw@gmx.de> (http://github.com/noerw)",
-    "Nick Peihl <nickpeihl@gmail.com>"
+    "Nick Peihl <nickpeihl@gmail.com>",
+    "Robin Boldt <robin-dev@kurviger.de> (https://kurviger.de/)"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/nickpeihl/leaflet-sidebar-v2.git"
+    "url": "https://github.com/boldtrn/leaflet-popup-sidebar"
   },
   "devDependencies": {
     "gulp": "^3.9.1",

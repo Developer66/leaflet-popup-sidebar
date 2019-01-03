@@ -1,24 +1,19 @@
-# leaflet-sidebar-v2
+# leaflet-popup-sidebar
 
-A responsive sidebar _just_ for [Leaflet](http://leafletjs.com/). A fork of [sidebar-v2](http://turbo87.github.io/sidebar-v2) that only contains the necessary ingredients for use in Leaflet and provides enhanced functionality.
+A responsive sidebar _just_ for [Leaflet](http://leafletjs.com/). A fork of [sidebar-v2](https://github.com/nickpeihl/leaflet-sidebar-v2), which is a fork of [sidebar-v2](http://turbo87.github.io/sidebar-v2) that only contains the necessary ingredients for use in Leaflet and provides enhanced functionality.
 
 ![Demo](doc/leaflet-sidebar-v2.gif)
 
 ## Why the Fork?
-- new features based on leaflet.js
-    - JS API for panel modification
-    - "autopan" feature, moving the map content next to the sidebar content
-- only supports leaflet (0.x and 1.x) to maintain a smaller codebase and support more features
-- compatibility with bootstrap (no generic `.sidebar` class)
-- provide a npm package `leaflet-sidebar-v2` with `main` and `style` fields in [`package.json`](package.json)
+I needed a sidebar that works more like a popup and that is designed to be used only via a JS API, no HTML markup required.
     
 ## Examples
-in `examples` folder, available live at <https://nickpeihl.github.io/leaflet-sidebar-v2/examples>
+In `examples` folder. I only changed the index.html example.
 
 ## Usage
 
 ### API
-leaflet-sidebar-v2 provides a simple API to dynamically modify the sidebar. All functions may be chained.
+leaflet-popup-sidebar provides a simple API to dynamically modify the sidebar. All functions may be chained.
 
 #### creation
 The parameters object is fully optional. The default values are shown:

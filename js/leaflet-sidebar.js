@@ -63,8 +63,10 @@ L.Control.Sidebar = L.Control.extend(/** @lends L.Control.Sidebar.prototype */ {
         container = typeof this.options.container === 'string'
           ? L.DomUtil.get(this.options.container)
           : this.options.container;
-        if (!container)
+        if (!container){
             container = L.DomUtil.create('div', 'leaflet-sidebar collapsed');
+            container.id = this.options.container;
+        }
 
         // Find paneContainer in DOM & store reference
         this._paneContainer = container.querySelector('div.leaflet-sidebar-content');
@@ -236,9 +238,7 @@ L.Control.Sidebar = L.Control.extend(/** @lends L.Control.Sidebar.prototype */ {
     },
 
     /**
-     * Close the sidebar (if it's open).
-     *
-     * @returns {L.Control.Sidebar}
+     * Close the sidebar (if it's open) and remove it from the map.
      */
     close: function() {
         var i;
@@ -285,10 +285,21 @@ L.Control.Sidebar = L.Control.extend(/** @lends L.Control.Sidebar.prototype */ {
      * @returns {L.Control.Sidebar}
      */
     addPanel: function(data) {
-        var i, pane, tab, tabHref, closeButtons, content;
+        var i, pane, tab, tabHref, closeButtons, content, overwrite = false;
+
+        for (i = 0; i < this._tabitems.length; i++) {
+            if (this._tabitems[i]._id === data.id) {
+                tab = this._tabitems[i];
+                break;
+            }
+        }
 
         // Create tab node
-        tab = L.DomUtil.create('li', data.disabled ? 'disabled' : '');
+        if(!tab){
+            tab = L.DomUtil.create('li', data.disabled ? 'disabled' : '');
+        }else{
+            overwrite = true;
+        }
         tabHref = L.DomUtil.create('a', '', tab);
         tabHref.href = '#' + data.id;
         tabHref.setAttribute('role', 'tab');
@@ -298,36 +309,62 @@ L.Control.Sidebar = L.Control.extend(/** @lends L.Control.Sidebar.prototype */ {
         tab._button = data.button; // to allow links to be disabled, the href cannot be used
         if (data.title && data.title[0] !== '<') tab.title = data.title;
 
-        // append it to the DOM and store JS references
-        if (data.position === 'bottom')
-            this._tabContainerBottom.appendChild(tab);
-        else
-            this._tabContainerTop.appendChild(tab);
+        if(!overwrite){
+            // append it to the DOM and store JS references
+            if (data.position === 'bottom')
+                this._tabContainerBottom.appendChild(tab);
+            else
+                this._tabContainerTop.appendChild(tab);
 
-        this._tabitems.push(tab);
+            this._tabitems.push(tab);
+        }
 
         // Create pane node
         if (data.pane) {
-            if (typeof data.pane === 'string') {
-                // pane is given as HTML string
-                pane = L.DomUtil.create('DIV', 'leaflet-sidebar-pane', this._paneContainer);
-                content = '';
-                if (data.title)
-                    content += '<h1 class="leaflet-sidebar-header">' + data.title;
-                if (this.options.closeButton)
-                    content += '<span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>';
-                if (data.title)
-                    content += '</h1>';
-                pane.innerHTML = content + data.pane;
-            } else {
-                // pane is given as DOM object
-                pane = data.pane;
-                this._paneContainer.appendChild(pane);
+            if(!overwrite){
+                
+                if (typeof data.pane === 'string') {
+                    // pane is given as HTML string
+                    pane = L.DomUtil.create('DIV', 'leaflet-sidebar-pane', this._paneContainer);
+                    content = '';
+                    if (data.title)
+                        content += '<h1 class="leaflet-sidebar-header">' + data.title;
+                    if (this.options.closeButton)
+                        content += '<span class="leaflet-sidebar-close"><i class="fa fa-times"></i></span>';
+                    if (data.title)
+                        content += '</h1>';
+                    pane.innerHTML = content + data.pane;
+                } else {
+                    // pane is given as DOM object
+                    pane = data.pane;
+                    this._paneContainer.appendChild(pane);
+                }
+                pane.id = data.id;
+    
+                this._panes.push(pane);    
+            }else{
+                for (i = 0; i < this._panes.length; i++) {
+                    if (this._panes[i].id === data.id) {
+                        pane = this._panes[i];     
+                        break;
+                    }
+                }
+
+                if (typeof data.pane === 'string') {
+                    content = '';
+                    if (data.title)
+                        content += '<h1 class="leaflet-sidebar-header">' + data.title;
+                    if (this.options.closeButton)
+                        content += '<span class="leaflet-sidebar-close"><i class="fa fa-times"></i></span>';
+                    if (data.title)
+                        content += '</h1>';
+                    pane.innerHTML = content + data.pane;
+                }else{
+                    // Only replaces the innerHTML
+                    pane.innerHTML = data.pane.innerHTML;
+                }
             }
-            pane.id = data.id;
-
-            this._panes.push(pane);
-
+            
             // Save references to close button & register click listener
             closeButtons = pane.querySelectorAll('.leaflet-sidebar-close');
             if (closeButtons.length) {
@@ -451,6 +488,7 @@ L.Control.Sidebar = L.Control.extend(/** @lends L.Control.Sidebar.prototype */ {
 
     onCloseClick: function() {
         this.close();
+        this.remove();
     },
 
     /**
