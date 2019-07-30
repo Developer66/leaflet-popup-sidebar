@@ -59,13 +59,18 @@ L.Control.Sidebar = L.Control.extend(/** @lends L.Control.Sidebar.prototype */ {
     onAdd: function(map) {
         var i, j, child, tabContainers, newContainer, container;
 
-        // Find sidebar HTMLElement via ID, create it if none was found
-        container = typeof this.options.container === 'string'
-          ? L.DomUtil.get(this.options.container)
-          : this.options.container;
-        if (!container){
-            container = L.DomUtil.create('div', 'leaflet-sidebar collapsed');
-            container.id = this.options.container;
+        // use container from previous onAdd()
+        container = this._container
+
+        if (!container) {
+            // Find sidebar HTMLElement via ID, create it if none was found
+            container = typeof this.options.container === 'string'
+            ? L.DomUtil.get(this.options.container)
+            : this.options.container;
+            if (!container){
+                container = L.DomUtil.create('div', 'leaflet-sidebar collapsed');
+                container.id = this.options.container;
+            }
         }
 
         // Find paneContainer in DOM & store reference
@@ -138,17 +143,15 @@ L.Control.Sidebar = L.Control.extend(/** @lends L.Control.Sidebar.prototype */ {
     onRemove: function (map) {
         var i;
 
-        this._map = null;
+        // Remove click listeners for tab & close buttons
+        for (var i = 0; i < this._tabitems.length; i++)
+            this._tabClick(this._tabitems[i], 'off');
+        for (var i = 0; i < this._closeButtons.length; i++)
+            this._closeClick(this._closeButtons[i], 'off');
+        
         this._tabitems = [];
         this._panes = [];
         this._closeButtons = [];
-
-        // Remove click listeners for tab & close buttons
-        for (i = 0; i < this._tabitems.length; i++)
-            this._tabClick(this._tabitems[i], 'off');
-
-        for (i = 0; i < this._closeButtons.length; i++)
-            this._closeClick(this._closeButtons[i], 'off');
 
         return this;
     },
@@ -451,6 +454,20 @@ L.Control.Sidebar = L.Control.extend(/** @lends L.Control.Sidebar.prototype */ {
         return this;
     },
 
+    onTabClick: function(e) {
+        // `this` points to the tab DOM element!
+        if (L.DomUtil.hasClass(this, 'active')) {
+            this._sidebar.close();
+        } else if (!L.DomUtil.hasClass(this, 'disabled')) {
+            if (typeof this._button === 'string') // an url
+                window.location.href = this._button;
+            else if (typeof this._button === 'function') // a clickhandler
+                this._button(e);
+            else // a normal pane
+                this._sidebar.open(this.querySelector('a').hash.slice(1));
+        }
+    },
+
     /**
      * (un)registers the onclick event for the given tab,
      * depending on the second argument.
@@ -463,27 +480,14 @@ L.Control.Sidebar = L.Control.extend(/** @lends L.Control.Sidebar.prototype */ {
         var link = tab.querySelector('a');
         if (!link.hasAttribute('href') || link.getAttribute('href')[0] !== '#')
             return;
-
-        var onTabClick = function(e) {
-            // `this` points to the tab DOM element!
-            if (L.DomUtil.hasClass(this, 'active')) {
-                this._sidebar.close();
-            } else if (!L.DomUtil.hasClass(this, 'disabled')) {
-                if (typeof this._button === 'string') // an url
-                    window.location.href = this._button;
-                else if (typeof this._button === 'function') // a clickhandler
-                    this._button(e);
-                else // a normal pane
-                    this._sidebar.open(this.querySelector('a').hash.slice(1));
-            }
-        };
+    
 
         if (on === 'on') {
             L.DomEvent
-                .on(tab.querySelector('a'), 'click', L.DomEvent.preventDefault)
-                .on(tab.querySelector('a'), 'click', onTabClick, tab);
+            .on(tab.querySelector('a'), 'click', L.DomEvent.preventDefault, tab)
+            .on(tab.querySelector('a'), 'click', this.onTabClick, tab);
         } else {
-            L.DomEvent.off(tab.querySelector('a'), 'click', onTabClick);
+            L.DomEvent.off(tab.querySelector('a'), 'click', this.onTabClick, tab);
         }
     },
 
@@ -520,7 +524,7 @@ L.Control.Sidebar = L.Control.extend(/** @lends L.Control.Sidebar.prototype */ {
                 return this._tabitems[i];
         }
 
-        return null;
+        throw Error('tab "' + id + '" not found');
     },
 
     /**

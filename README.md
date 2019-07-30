@@ -47,7 +47,7 @@ sidebar.addPanel({
     button: 'https://github.com/nickpeihl/leaflet-sidebar-v2',
 });
 
-/* add an button with click listener */
+/* add a button with click listener */
 sidebar.addPanel({
     id: 'click',
     tab: '<i class="fa fa-info"></i>',
@@ -74,9 +74,12 @@ sidebar.close();
 #### remove sidebar
 
 ```js
-/* remove the sidebar (and destroy the sidebar container!) */
+/* remove the sidebar (keeping the sidebar container) */
 sidebar.remove();
 sidebar.removeFrom(map); // leaflet 0.x
+
+/* to clear the sidebar state, remove the container reference */
+sidebar._container = null
 ```
 
 ### markup
